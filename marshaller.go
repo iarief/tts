@@ -8,16 +8,28 @@ import (
 )
 
 const (
+	// ErrorInvalidWidth is string representation of the error returned
+	// when the function is called with an empty string
+	ErrorInvalidWidth = "Invalid width"
+	// ErrorEmptyString is string representatino of the error returned
+	// when there are one or more invalid txt_width tag in the struct
+	ErrorEmptyString = "String is empty"
+	// ErrorEmptyStruct is string representation of the error returned
+	// when marshal is called with an empty struct
+	ErrorEmptyStruct = "Struct is empty"
+
 	widthTag  = "txt_width"
 	padDirTag = "pad_dir"
 	padStrTag = "pad_str"
+	defPadDir = "left"
+	defPadStr = " "
 )
 
-// Unmarshall will unmarshall a fixed width string to a struct, the struct need to have the tag "txt_width" that contains an int, the field would be parsed by it's definition order
+// Unmarshal will Unmarshal a fixed width string to a struct, the struct need to have the tag "txt_width" that contains an int, the field would be parsed by it's definition order
 // Use `txt_width:"-"` if you don't want the field to be parsed
-func Unmarshall(str string, obj interface{}) error {
+func Unmarshal(str string, obj interface{}) error {
 	if len(str) < 1 {
-		return errors.New("string is empty")
+		return errors.New(ErrorEmptyString)
 	}
 	elemsType := reflect.TypeOf(obj).Elem()
 	elemsVal := reflect.ValueOf(obj).Elem()
@@ -33,7 +45,7 @@ func Unmarshall(str string, obj interface{}) error {
 			}
 			width, err := strconv.Atoi(widthTxt)
 			if err != nil {
-				return errors.New("invalid width")
+				return errors.New(ErrorInvalidWidth)
 			}
 			if len(str) >= width {
 				val := strings.TrimSpace(str[:width])
@@ -55,8 +67,65 @@ func Unmarshall(str string, obj interface{}) error {
 	return nil
 }
 
+// Marshal is a function to marshal struct into string of fixed width determined by the struct tag
+func Marshal(obj interface{}) (str string, err error) {
+	result := ""
+	if obj == nil {
+		return "", errors.New(ErrorEmptyStruct)
+	}
+	elemsType := reflect.TypeOf(obj).Elem()
+	elemsVal := reflect.ValueOf(obj).Elem()
+
+	for i := 0; i < elemsType.NumField(); i++ {
+		elemVal := elemsVal.Field(i)
+		elemType := elemsType.Field(i)
+		tag := elemType.Tag
+		widthTxt := tag.Get(widthTag)
+		padStr := tag.Get(padStrTag)
+		padDir := tag.Get(padDirTag)
+		if widthTxt == "-" {
+			continue
+		}
+		if padStr == "" {
+			padStr = defPadStr
+		}
+		if padDir == "" {
+			padDir = defPadDir
+		}
+		width, err := strconv.Atoi(widthTxt)
+		if err != nil {
+			return "", errors.New(ErrorInvalidWidth)
+		}
+		if !elemVal.CanAddr() || !elemVal.CanSet() {
+			continue
+		}
+		strVal := ""
+		kind := elemVal.Kind()
+		switch kind {
+		case reflect.Int:
+			strVal = strconv.FormatInt(elemVal.Int(), 10)
+		case reflect.String:
+			strVal = elemVal.String()
+		}
+
+		if len(strVal) > width {
+			strVal = strVal[:width]
+		} else if len(strVal) < width {
+			strPad := strings.Repeat(padStr, width-len(strVal))
+			if padDir == "left" {
+				strVal = strPad + strVal
+			} else if padDir == "right" {
+				strVal = strVal + strPad
+			}
+		}
+		result += strVal
+
+	}
+	return result, nil
+}
+
 /* TODO
-1. Create marshaller function
-2. Add more type to handle in unmarshall
+1. Find out how to do the marshal function without using pointer
+2. Add more type to handle in Unmarshal
 3. Go for a vacation somewhere far away
 */

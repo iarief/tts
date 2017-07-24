@@ -7,14 +7,15 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var strUser = "irfani    arief     26"
+var strUser = "john      doe       026"
 
 type (
 	User struct {
-		FirstName  string `txt_width:"10" pad_dir:"left" pad_str:" "`
-		MiddleName string `txt_width:"-" json:"-"`
-		LastName   string `txt_width:"10" pad_dir:"left" pad_str:" "`
-		Age        int    `txt_width:"2"`
+		FirstName   string `txt_width:"10" pad_dir:"right" pad_str:" "`
+		MiddleName  string `txt_width:"-" json:"-"`
+		LastName    string `txt_width:"10" pad_dir:"right" pad_str:" "`
+		ignoredProp string `txt_width:"10"`
+		Age         int    `txt_width:"3" pad_dir:"left" pad_str:"0"`
 	}
 
 	UserWrongWidth struct {
@@ -25,31 +26,58 @@ type (
 	}
 )
 
-func TestUnmarshallCorrect(t *testing.T) {
+func TestUnmarshalDefault(t *testing.T) {
 	user := User{}
-	err := Unmarshall(strUser, &user)
+	err := Unmarshal(strUser, &user)
 	assert.NoError(t, err)
 	byteJSON, err := json.Marshal(user)
 	assert.NoError(t, err)
 	// assert.Equal(t, "{\"FirstName\":\"irfani\",\"LastName\":\"arief\"}", string(byteJSON))
-	assert.Equal(t, "{\"FirstName\":\"irfani\",\"LastName\":\"arief\",\"Age\":26}", string(byteJSON))
+	assert.Equal(t, "{\"FirstName\":\"john\",\"LastName\":\"doe\",\"Age\":26}", string(byteJSON))
 }
-func TestUnmarshallEmptyString(t *testing.T) {
+func TestUnmarshalEmptyString(t *testing.T) {
 
 	user := User{}
-	err := Unmarshall("", &user)
-	assert.Error(t, err, "string is empty")
+	err := Unmarshal("", &user)
+	assert.EqualError(t, err, ErrorEmptyString)
 }
 
-func TestUnmarshallWrongWidth(t *testing.T) {
+func TestUnmarshalWrongWidth(t *testing.T) {
 	user := UserWrongWidth{}
-	err := Unmarshall(strUser, &user)
-	assert.Error(t, err, "invalid width")
+	err := Unmarshal(strUser, &user)
+	assert.EqualError(t, err, ErrorInvalidWidth)
 }
 
-func TestUnmarshallTooWide(t *testing.T) {
+func TestUnmarshalTooWide(t *testing.T) {
 	user := UserTooWide{}
-	err := Unmarshall(strUser, &user)
+	err := Unmarshal(strUser, &user)
 	assert.NoError(t, err)
 	assert.Equal(t, UserTooWide{}, user)
+}
+
+func TestMarshalDefault(t *testing.T) {
+	user := User{"john", "the", "doe", "smart", 26}
+	res, err := Marshal(&user)
+	assert.NoError(t, err)
+	assert.Equal(t, "john      doe       026", res)
+}
+
+func TestMarshalEmptyStruct(t *testing.T) {
+	res, err := Marshal(nil)
+	assert.EqualError(t, err, ErrorEmptyStruct)
+	assert.Empty(t, res)
+}
+
+func TestMarshalOverflowString(t *testing.T) {
+	user := User{"johnjohnjohn", "the", "doe", "smart", 26}
+	res, err := Marshal(&user)
+	assert.NoError(t, err)
+	assert.Equal(t, "johnjohnjodoe       026", res)
+}
+
+func TestMarshalWrongWidth(t *testing.T) {
+	user := UserWrongWidth{"john"}
+	res, err := Marshal(&user)
+	assert.EqualError(t, err, ErrorInvalidWidth)
+	assert.Empty(t, res)
 }
