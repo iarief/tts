@@ -69,13 +69,17 @@ func Unmarshal(str string, obj interface{}) error {
 
 // Marshal is a function to marshal struct into string of fixed width determined by the struct tag
 func Marshal(obj interface{}) (str string, err error) {
+
 	result := ""
 	if obj == nil {
 		return "", errors.New(ErrorEmptyStruct)
 	}
-	elemsType := reflect.TypeOf(obj).Elem()
-	elemsVal := reflect.ValueOf(obj).Elem()
-
+	elemsType := reflect.TypeOf(obj)
+	elemsVal := reflect.ValueOf(obj)
+	if elemsType.Kind() == reflect.Ptr {
+		elemsType = elemsType.Elem()
+		elemsVal = elemsVal.Elem()
+	}
 	for i := 0; i < elemsType.NumField(); i++ {
 		elemVal := elemsVal.Field(i)
 		elemType := elemsType.Field(i)
@@ -83,6 +87,7 @@ func Marshal(obj interface{}) (str string, err error) {
 		widthTxt := tag.Get(widthTag)
 		padStr := tag.Get(padStrTag)
 		padDir := tag.Get(padDirTag)
+
 		if widthTxt == "-" {
 			continue
 		}
@@ -96,7 +101,7 @@ func Marshal(obj interface{}) (str string, err error) {
 		if err != nil {
 			return "", errors.New(ErrorInvalidWidth)
 		}
-		if !elemVal.CanAddr() || !elemVal.CanSet() {
+		if !elemVal.CanInterface() {
 			continue
 		}
 		strVal := ""
@@ -125,7 +130,5 @@ func Marshal(obj interface{}) (str string, err error) {
 }
 
 /* TODO
-1. Find out how to do the marshal function without using pointer
-2. Add more type to handle in Unmarshal
-3. Go for a vacation somewhere far away
+1. Add more type to handle
 */

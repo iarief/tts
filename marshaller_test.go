@@ -57,7 +57,7 @@ func TestUnmarshalTooWide(t *testing.T) {
 
 func TestMarshalDefault(t *testing.T) {
 	user := User{"john", "the", "doe", "smart", 26}
-	res, err := Marshal(&user)
+	res, err := Marshal(user)
 	assert.NoError(t, err)
 	assert.Equal(t, "john      doe       026", res)
 }
@@ -70,14 +70,21 @@ func TestMarshalEmptyStruct(t *testing.T) {
 
 func TestMarshalOverflowString(t *testing.T) {
 	user := User{"johnjohnjohn", "the", "doe", "smart", 26}
-	res, err := Marshal(&user)
+	res, err := Marshal(user)
 	assert.NoError(t, err)
 	assert.Equal(t, "johnjohnjodoe       026", res)
 }
 
 func TestMarshalWrongWidth(t *testing.T) {
 	user := UserWrongWidth{"john"}
-	res, err := Marshal(&user)
+	res, err := Marshal(user)
 	assert.EqualError(t, err, ErrorInvalidWidth)
 	assert.Empty(t, res)
+}
+
+func TestMarshalPointer(t *testing.T) {
+	user := User{"john", "the", "doe", "smart", 26}
+	res, err := Marshal(&user)
+	assert.NoError(t, err)
+	assert.Equal(t, "john      doe       026", res)
 }
