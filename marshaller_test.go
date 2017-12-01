@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var strUser = "john      doe       026"
+var strUser = "john      doe       026  182.88"
 
 type (
 	User struct {
@@ -16,6 +16,7 @@ type (
 		LastName    string `txt_width:"10" pad_dir:"right" pad_str:" "`
 		ignoredProp string `txt_width:"10"`
 		Age         int    `txt_width:"3" pad_dir:"left" pad_str:"0"`
+		Height      float64 `txt_width:"8" pad_dir:"left" pad_str:" "`
 	}
 
 	UserWrongWidth struct {
@@ -33,7 +34,7 @@ func TestUnmarshalDefault(t *testing.T) {
 	byteJSON, err := json.Marshal(user)
 	assert.NoError(t, err)
 	// assert.Equal(t, "{\"FirstName\":\"irfani\",\"LastName\":\"arief\"}", string(byteJSON))
-	assert.Equal(t, "{\"FirstName\":\"john\",\"LastName\":\"doe\",\"Age\":26}", string(byteJSON))
+	assert.Equal(t, "{\"FirstName\":\"john\",\"LastName\":\"doe\",\"Age\":26,\"Height\":182.88}", string(byteJSON))
 }
 func TestUnmarshalEmptyString(t *testing.T) {
 
@@ -56,10 +57,10 @@ func TestUnmarshalTooWide(t *testing.T) {
 }
 
 func TestMarshalDefault(t *testing.T) {
-	user := User{"john", "the", "doe", "smart", 26}
+	user := User{"john", "the", "doe", "smart", 26, 182.88}
 	res, err := Marshal(user)
 	assert.NoError(t, err)
-	assert.Equal(t, "john      doe       026", res)
+	assert.Equal(t, "john      doe       026  182.88", res)
 }
 
 func TestMarshalEmptyStruct(t *testing.T) {
@@ -69,10 +70,10 @@ func TestMarshalEmptyStruct(t *testing.T) {
 }
 
 func TestMarshalOverflowString(t *testing.T) {
-	user := User{"johnjohnjohn", "the", "doe", "smart", 26}
+	user := User{"johnjohnjohn", "the", "doe", "smart", 26, 182.88}
 	res, err := Marshal(user)
 	assert.NoError(t, err)
-	assert.Equal(t, "johnjohnjodoe       026", res)
+	assert.Equal(t, "johnjohnjodoe       026  182.88", res)
 }
 
 func TestMarshalWrongWidth(t *testing.T) {
@@ -83,8 +84,8 @@ func TestMarshalWrongWidth(t *testing.T) {
 }
 
 func TestMarshalPointer(t *testing.T) {
-	user := User{"john", "the", "doe", "smart", 26}
+	user := User{"john", "the", "doe", "smart", 26, 182.88}
 	res, err := Marshal(&user)
 	assert.NoError(t, err)
-	assert.Equal(t, "john      doe       026", res)
+	assert.Equal(t, "john      doe       026  182.88", res)
 }

@@ -56,6 +56,9 @@ func Unmarshal(str string, obj interface{}) error {
 					// try to convert to int, but continue anyway if it failed
 					valInt, _ := strconv.ParseInt(val, 10, 64)
 					elemVal.SetInt(valInt)
+				case reflect.Float64:
+					valFloat, _ := strconv.ParseFloat(val, 64)
+					elemVal.SetFloat(valFloat)
 				case reflect.String:
 					elemVal.SetString(val)
 				}
@@ -109,6 +112,8 @@ func Marshal(obj interface{}) (str string, err error) {
 		switch kind {
 		case reflect.Int:
 			strVal = strconv.FormatInt(elemVal.Int(), 10)
+		case reflect.Float64:
+			strVal = strconv.FormatFloat(elemVal.Float(), 'f', -1, 64)
 		case reflect.String:
 			strVal = elemVal.String()
 		}
