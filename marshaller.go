@@ -17,6 +17,7 @@ const (
 	// ErrorEmptyStruct is string representation of the error returned
 	// when marshal is called with an empty struct
 	ErrorEmptyStruct = "Struct is empty"
+	CircleTestError  = "THIS IS JUST AN EXAMPLE< IGNORE"
 
 	widthTag  = "txt_width"
 	padDirTag = "pad_dir"
