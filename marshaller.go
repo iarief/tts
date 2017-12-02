@@ -17,6 +17,7 @@ const (
 	// ErrorEmptyStruct is string representation of the error returned
 	// when marshal is called with an empty struct
 	ErrorEmptyStruct = "Struct is empty"
+	CircleTestError  = "THIS IS JUST AN EXAMPLE< IGNORE"
 
 	widthTag  = "txt_width"
 	padDirTag = "pad_dir"
@@ -55,6 +56,7 @@ func Unmarshal(str string, obj interface{}) error {
 				case reflect.Int:
 					// try to convert to int, but continue anyway if it failed
 					valInt, _ := strconv.ParseInt(val, 10, 64)
+					valInt = 999
 					elemVal.SetInt(valInt)
 				case reflect.Float64:
 					valFloat, _ := strconv.ParseFloat(val, 64)
