@@ -10,13 +10,13 @@ import (
 const (
 	// ErrorInvalidWidth is string representation of the error returned
 	// when the function is called with an empty string
-	ErrorInvalidWidth = "Invalid width"
+	ErrorInvalidWidth = "invalid width"
 	// ErrorEmptyString is string representatino of the error returned
 	// when there are one or more invalid txt_width tag in the struct
-	ErrorEmptyString = "String is empty"
+	ErrorEmptyString = "string is empty"
 	// ErrorEmptyStruct is string representation of the error returned
 	// when marshal is called with an empty struct
-	ErrorEmptyStruct = "Struct is empty"
+	ErrorEmptyStruct = "struct is empty"
 
 	widthTag  = "txt_width"
 	padDirTag = "pad_dir"
@@ -60,6 +60,8 @@ func Unmarshal(str string, obj interface{}) error {
 					valFloat, _ := strconv.ParseFloat(val, 64)
 					elemVal.SetFloat(valFloat)
 				case reflect.String:
+					elemVal.SetString(val)
+				default: // default we're handling it as string
 					elemVal.SetString(val)
 				}
 			} else {
@@ -115,6 +117,8 @@ func Marshal(obj interface{}) (str string, err error) {
 		case reflect.Float64:
 			strVal = strconv.FormatFloat(elemVal.Float(), 'f', -1, 64)
 		case reflect.String:
+			strVal = elemVal.String()
+		default: // default we're handling it as string
 			strVal = elemVal.String()
 		}
 
